@@ -77,26 +77,43 @@
     .history {
       margin-top: 40px;
     }
-
-    .history-list {
-  display: flex;
-  flex-direction: column;  /* stack vertically */
-  align-items: flex-start;
-  gap: 8px;
-  margin: 0 auto;
-  max-width: 300px;
+.history h2 {
+  text-align: center;
 }
 
+
+   .history-list {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin: 0 auto;
+  width: 800px; /* 🔧 Match spinner width exactly */
+}
+
+
+
     .card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: #222;
   border-left: 5px solid #00ff88;
-  padding: 10px 40px 10px 15px;
+  padding: 10px 15px;
   border-radius: 5px;
   font-size: 1.8rem;
   color: #00ff88;
   position: relative;
   width: 100%;
+  transition: background 0.3s;
 }
+
+.card.latest {
+  background: #333;
+  border-left-color: #ffff00;
+}
+
+
 
 .remove-btn {
   position: absolute;
@@ -108,6 +125,18 @@
   color: red;
   font-size: 1.2rem;
   cursor: pointer;
+}
+
+.card-number {
+  flex-shrink: 0;
+  font-weight: bold;
+  margin-right: 15px;
+  width: 30px;
+}
+
+.card-lucky {
+  flex-grow: 1;
+  text-align: left;
 }
 
 
@@ -201,23 +230,48 @@ function stopDigit(index, finalDigit, delay) {
 
 
     function addToHistory(numStr) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.textContent = numStr;
+  // Remove previous highlight
+  const oldLatest = document.querySelector('.card.latest');
+  if (oldLatest) oldLatest.classList.remove('latest');
 
-      const btn = document.createElement('button');
-      btn.className = 'remove-btn';
-      btn.textContent = '×';
-      btn.onclick = () => {
-        const num = parseInt(numStr);
-        drawnNumbers.delete(num);
-        availableNumbers.push(num);
-        card.remove();
-      };
+  const card = document.createElement('div');
+  card.className = 'card latest';
 
-      card.appendChild(btn);
-      historyList.prepend(card);
-    }
+  const index = historyList.children.length + 1;
+
+  const numberEl = document.createElement('div');
+  numberEl.className = 'card-number';
+  numberEl.textContent = `${index}.`;
+
+  const luckyEl = document.createElement('div');
+  luckyEl.className = 'card-lucky';
+  luckyEl.textContent = numStr;
+
+  const btn = document.createElement('button');
+  btn.className = 'remove-btn';
+  btn.textContent = '×';
+  btn.onclick = () => {
+  const num = parseInt(numStr);
+  drawnNumbers.delete(num);
+  availableNumbers.push(num);
+  card.remove();
+
+  // ✅ Re-number in reverse (because newest is at top)
+  const cards = Array.from(document.querySelectorAll('.history-list .card')).reverse();
+  cards.forEach((c, i) => {
+    const numberLabel = c.querySelector('.card-number');
+    if (numberLabel) numberLabel.textContent = `${i + 1}.`;
+  });
+};
+
+
+  card.appendChild(numberEl);
+  card.appendChild(luckyEl);
+  card.appendChild(btn);
+  historyList.prepend(card);
+
+}
+
 
     let lastMin = null;
 let lastMax = null;
